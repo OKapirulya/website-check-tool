@@ -1,7 +1,8 @@
 import type { Finding } from '../types.js'
+import { safeFetch } from '../lib/http.js'
 
 export async function checkServerFingerprint(url: string): Promise<Finding[]> {
-  const response = await fetch(url, { redirect: 'follow' })
+  const response = await safeFetch(url, { redirect: 'follow' })
   const server = response.headers.get('server')
   const poweredBy = response.headers.get('x-powered-by')
 

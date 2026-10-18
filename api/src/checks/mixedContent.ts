@@ -1,8 +1,11 @@
 import type { Finding } from '../types.js'
+import { safeFetch, readTextLimited } from '../lib/http.js'
+
+const MAX_BODY_BYTES = 2_000_000 // 2 MB
 
 export async function checkMixedContent(url: string): Promise<Finding[]> {
-  const response = await fetch(url, { redirect: 'follow' })
-  const html = await response.text()
+  const response = await safeFetch(url, { redirect: 'follow' })
+  const html = await readTextLimited(response, MAX_BODY_BYTES)
 
   const httpResourceRegex = /(?:src|href)=["']http:\/\/[^"']+["']/gi
   const matches = html.match(httpResourceRegex) ?? []

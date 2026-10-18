@@ -1,4 +1,5 @@
 import type { Finding } from '../types.js'
+import { safeFetch } from '../lib/http.js'
 
 const SENSITIVE_PATHS = [
   { path: '/.git/config', label: 'Git configuration' },
@@ -14,7 +15,7 @@ export async function checkExposedPaths(url: string): Promise<Finding[]> {
     const target = new URL(path, base.origin).toString()
 
     try {
-      const response = await fetch(target, { redirect: 'manual' })
+      const response = await safeFetch(target, { redirect: 'manual' })
       const isExposed = response.status === 200
       const isSecurityTxt = path.includes('security.txt')
 

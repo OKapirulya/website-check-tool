@@ -12,16 +12,16 @@ RUN npm run build
 # Production stage
 FROM node:22-alpine
 
+ENV NODE_ENV=production
+
 WORKDIR /app
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 COPY --from=build /app/dist ./dist
 
-USER appuser
+USER node
 
 EXPOSE 3000
 

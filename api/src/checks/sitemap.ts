@@ -1,11 +1,12 @@
 import type { Finding } from '../types.js'
+import { safeFetch } from '../lib/http.js'
 
 export async function checkSitemapRobots(url: string): Promise<Finding[]> {
   const base = new URL(url)
   const findings: Finding[] = []
 
   const robotsUrl = new URL('/robots.txt', base.origin).toString()
-  const robotsResponse = await fetch(robotsUrl, { redirect: 'manual' })
+  const robotsResponse = await safeFetch(robotsUrl, { redirect: 'manual' })
 
   findings.push({
     id: 'robots-txt',
@@ -18,7 +19,7 @@ export async function checkSitemapRobots(url: string): Promise<Finding[]> {
   })
 
   const sitemapUrl = new URL('/sitemap.xml', base.origin).toString()
-  const sitemapResponse = await fetch(sitemapUrl, { redirect: 'manual' })
+  const sitemapResponse = await safeFetch(sitemapUrl, { redirect: 'manual' })
 
   findings.push({
     id: 'sitemap-xml',

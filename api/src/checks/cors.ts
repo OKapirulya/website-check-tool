@@ -1,7 +1,8 @@
 import type { Finding } from '../types.js'
+import { safeFetch } from '../lib/http.js'
 
 export async function checkCors(url: string): Promise<Finding[]> {
-  const response = await fetch(url, { redirect: 'follow' })
+  const response = await safeFetch(url, { redirect: 'follow' })
   const allowOrigin = response.headers.get('access-control-allow-origin')
   const allowCredentials = response.headers.get('access-control-allow-credentials')
 

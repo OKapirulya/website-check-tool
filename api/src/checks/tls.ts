@@ -57,6 +57,17 @@ export function checkTls(url: string): Promise<Finding[]> {
       }
     )
 
+    socket.setTimeout(5000, () => {
+      socket.destroy()
+      resolve([{
+        id: 'tls-cert',
+        title: 'TLS Certificate',
+        severity: 'high',
+        passed: false,
+        details: 'Connection timed out while checking the TLS certificate.',
+      }])
+    })
+
     socket.on('error', () => {
       resolve([{
         id: 'tls-cert',

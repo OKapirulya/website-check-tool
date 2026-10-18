@@ -2,16 +2,20 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
+  "private": true,
   "type": "module",
   "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Oleg Kapirulya",
   "dependencies": {
     "@hono/node-server": "^2.1.5",
     "hono": "^4.13.13"

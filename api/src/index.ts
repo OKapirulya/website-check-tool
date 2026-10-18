@@ -1,19 +1,11 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { checkSecurityHeaders } from './checks/securityHeaders.js'
+import { runAllChecks } from './checks/index.js'
 
 const app = new Hono()
 
 app.get('/health', (c) => {
   return c.json({ status: 'ok' })
-})
-
-const port = 3000
-console.log(`Server running at http://localhost:${port}`)
-
-serve({
-  fetch: app.fetch,
-  port,
 })
 
 app.get('/check', async (c) => {
@@ -24,9 +16,17 @@ app.get('/check', async (c) => {
   }
 
   try {
-    const findings = await checkSecurityHeaders(url)
+    const findings = await runAllChecks(url)
     return c.json({ url, findings })
   } catch (error) {
     return c.json({ error: 'Could not reach target URL' }, 502)
   }
+})
+
+const port = 3000
+console.log(`Server running at http://localhost:${port}`)
+
+serve({
+  fetch: app.fetch,
+  port,
 })

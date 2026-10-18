@@ -8,6 +8,7 @@ import { checkSitemapRobots } from './sitemap.js'
 import { checkTls } from './tls.js'
 import { checkMixedContent } from './mixedContent.js'
 import { checkSri } from './sri.js'
+import { checkDns } from './dns.js'
 
 type CheckFn = (url: string) => Promise<Finding[]>
 
@@ -21,6 +22,7 @@ const checks: CheckFn[] = [
   checkTls,
   checkMixedContent,
   checkSri,
+  checkDns,
 ]
 
 export async function runAllChecks(url: string): Promise<Finding[]> {

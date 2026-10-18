@@ -1,8 +1,13 @@
 import type { Finding } from '../types.js'
 import { checkSecurityHeaders } from './securityHeaders.js'
-import { checkServerFingerprint } from './serverFingerprint.js'
 import { checkCookies } from './cookies.js'
+import { checkServerFingerprint } from './serverFingerprint.js'
 import { checkCors } from './cors.js'
+import { checkExposedPaths } from './exposedPaths.js'
+import { checkSitemapRobots } from './sitemap.js'
+import { checkTls } from './tls.js'
+import { checkMixedContent } from './mixedContent.js'
+import { checkSri } from './sri.js'
 
 type CheckFn = (url: string) => Promise<Finding[]>
 
@@ -11,6 +16,11 @@ const checks: CheckFn[] = [
   checkCookies,
   checkServerFingerprint,
   checkCors,
+  checkExposedPaths,
+  checkSitemapRobots,
+  checkTls,
+  checkMixedContent,
+  checkSri,
 ]
 
 export async function runAllChecks(url: string): Promise<Finding[]> {

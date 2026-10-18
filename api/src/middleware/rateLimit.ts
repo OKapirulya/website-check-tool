@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from 'hono'
+import type { Context, MiddlewareHandler } from 'hono'
 import { getConnInfo } from '@hono/node-server/conninfo'
 
 interface Bucket {
@@ -18,10 +18,18 @@ setInterval(() => {
   }
 }, WINDOW_MS).unref()
 
-export const rateLimit: MiddlewareHandler = async (c, next) => {
-  const info = getConnInfo(c)
-  const ip = info.remote.address ?? 'unknown'
+function getClientIp(c: Context): string {
+  const forwardedFor = c.req.header('x-forwarded-for')
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim()
+  }
 
+  const info = getConnInfo(c)
+  return info.remote.address ?? 'unknown'
+}
+
+export const rateLimit: MiddlewareHandler = async (c, next) => {
+  const ip = getClientIp(c)
   const now = Date.now()
   const bucket = buckets.get(ip)
 

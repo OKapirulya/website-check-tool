@@ -1,29 +1,52 @@
 import type { Finding } from '../types.js'
 import { safeFetch } from '../lib/http.js'
 
+const MIN_HSTS_MAX_AGE = 15_552_000 // ~180 days, a commonly recommended minimum
+
 export async function checkSecurityHeaders(url: string): Promise<Finding[]> {
   const response = await safeFetch(url, { redirect: 'follow' })
   const headers = response.headers
   const findings: Finding[] = []
 
+  const cspValue = headers.get('content-security-policy')
+
   findings.push({
     id: 'csp',
     title: 'Content-Security-Policy',
     severity: 'high',
-    passed: headers.has('content-security-policy'),
-    details: headers.has('content-security-policy')
+    passed: Boolean(cspValue),
+    details: cspValue
       ? 'CSP header is present.'
       : 'No CSP header found. This increases the risk of cross-site scripting (XSS) attacks.',
   })
 
   findings.push({
+    id: 'csp-frame-ancestors',
+    title: 'CSP frame-ancestors',
+    severity: 'medium',
+    passed: Boolean(cspValue && /frame-ancestors/i.test(cspValue)),
+    details: cspValue && /frame-ancestors/i.test(cspValue)
+      ? 'Content-Security-Policy restricts framing via frame-ancestors.'
+      : 'No frame-ancestors directive found. X-Frame-Options alone is the older, less flexible protection against clickjacking.',
+  })
+
+  const hstsHeader = headers.get('strict-transport-security')
+  const hstsMaxAgeMatch = hstsHeader?.match(/max-age=(\d+)/i)
+  const hstsMaxAge = hstsMaxAgeMatch ? parseInt(hstsMaxAgeMatch[1], 10) : null
+  const hstsPassed = hstsMaxAge !== null && hstsMaxAge >= MIN_HSTS_MAX_AGE
+
+  findings.push({
     id: 'hsts',
     title: 'Strict-Transport-Security',
     severity: 'high',
-    passed: headers.has('strict-transport-security'),
-    details: headers.has('strict-transport-security')
-      ? 'HSTS header is present.'
-      : 'No HSTS header found. Visitors could be downgraded to an insecure HTTP connection.',
+    passed: hstsPassed,
+    details: !hstsHeader
+      ? 'No HSTS header found. Visitors could be downgraded to an insecure HTTP connection.'
+      : hstsMaxAge === null
+        ? 'HSTS header is present but has no readable max-age value.'
+        : hstsPassed
+          ? `HSTS header is present with a max-age of about ${Math.round(hstsMaxAge / 86400)} days.`
+          : `HSTS header is present but its max-age of about ${Math.round(hstsMaxAge / 86400)} days is below the commonly recommended minimum of about 180 days.`,
   })
 
   findings.push({

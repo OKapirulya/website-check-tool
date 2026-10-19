@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Website Check Tool</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <main class="page">
     <header class="header">
@@ -14,12 +16,7 @@
     </header>
 
     <form id="scan-form" class="scan-form">
-      <input
-        type="url"
-        id="url-input"
-        placeholder="https://example.com"
-        required
-      />
+      <input type="url" id="url-input" placeholder="https://example.com" required />
       <button type="submit">Scan</button>
     </form>
 
@@ -32,8 +29,15 @@
       <p id="ai-status" class="status"></p>
       <div id="ai-explanation" class="ai-explanation"></div>
     </div>
+
+    <div id="a11y-section" class="ai-section" hidden>
+      <button id="a11y-button" type="button">Check Accessibility</button>
+      <p id="a11y-status" class="status"></p>
+      <div id="a11y-results" class="results"></div>
+    </div>
   </main>
 
   <script src="script.js"></script>
 </body>
+
 </html>

@@ -57,3 +57,4 @@ export function createRateLimiter({ windowMs, maxRequests }: RateLimitOptions): 
 
 export const rateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 10 })
 export const explainRateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 5 })
+export const accessibilityRateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 5 })

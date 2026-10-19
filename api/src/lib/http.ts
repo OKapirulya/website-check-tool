@@ -95,3 +95,10 @@ export async function readTextLimited(response: Response, maxBytes: number): Pro
 
   return result
 }
+
+export function isPrivateAddress(hostname: string): boolean {
+  const ipVersion = isIP(hostname)
+  if (ipVersion === 4) return isPrivateIPv4(hostname)
+  if (ipVersion === 6) return isPrivateIPv6(hostname)
+  return false
+}

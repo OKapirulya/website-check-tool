@@ -8,6 +8,11 @@ const explainButton = document.getElementById('explain-button')
 const aiStatusEl = document.getElementById('ai-status')
 const aiExplanationEl = document.getElementById('ai-explanation')
 
+const a11ySection = document.getElementById('a11y-section')
+const a11yButton = document.getElementById('a11y-button')
+const a11yStatusEl = document.getElementById('a11y-status')
+const a11yResultsEl = document.getElementById('a11y-results')
+
 let currentUrl = null
 
 const SEVERITY_ORDER = ['high', 'medium', 'low']
@@ -27,6 +32,9 @@ form.addEventListener('submit', async (event) => {
   aiSection.hidden = true
   aiExplanationEl.textContent = ''
   aiStatusEl.textContent = ''
+  a11ySection.hidden = true
+  a11yResultsEl.innerHTML = ''
+  a11yStatusEl.textContent = ''
   setStatus('Scanning...', 'loading')
 
   try {
@@ -39,11 +47,13 @@ form.addEventListener('submit', async (event) => {
     }
 
     setStatus(`Scanned ${data.url}`, 'done')
-    renderFindings(data.findings)
+    renderFindings(resultsEl, data.findings)
 
     currentUrl = data.url
     explainButton.disabled = false
     aiSection.hidden = false
+    a11yButton.disabled = false
+    a11ySection.hidden = false
   } catch {
     setStatus('Could not reach the scanner.', 'error')
   }
@@ -77,13 +87,41 @@ explainButton.addEventListener('click', async () => {
   }
 })
 
+a11yButton.addEventListener('click', async () => {
+  if (!currentUrl) return
+
+  a11yButton.disabled = true
+  a11yResultsEl.innerHTML = ''
+  a11yStatusEl.textContent = 'Loading the page in a headless browser, this can take up to 15 seconds...'
+  a11yStatusEl.className = 'status status-loading'
+
+  try {
+    const response = await fetch(`/accessibility?url=${encodeURIComponent(currentUrl)}`)
+    const data = await response.json()
+
+    if (!response.ok) {
+      a11yStatusEl.textContent = data.error ?? 'Accessibility check failed.'
+      a11yStatusEl.className = 'status status-error'
+      return
+    }
+
+    a11yStatusEl.textContent = ''
+    renderFindings(a11yResultsEl, data.findings)
+  } catch {
+    a11yStatusEl.textContent = 'Could not reach the accessibility check service.'
+    a11yStatusEl.className = 'status status-error'
+  } finally {
+    a11yButton.disabled = false
+  }
+})
+
 function setStatus(text, state) {
   statusEl.textContent = text
   statusEl.className = `status status-${state}`
 }
 
-function renderFindings(findings) {
-  resultsEl.innerHTML = ''
+function renderFindings(container, findings) {
+  container.innerHTML = ''
 
   for (const severity of SEVERITY_ORDER) {
     const group = findings.filter((finding) => finding.severity === severity)
@@ -100,7 +138,7 @@ function renderFindings(findings) {
       section.appendChild(renderFinding(finding))
     }
 
-    resultsEl.appendChild(section)
+    container.appendChild(section)
   }
 }
 

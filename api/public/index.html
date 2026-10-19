@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Website Check Tool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1>Website Check Tool</h1>
+      <p class="tagline">Passive security and configuration checks for any public website.</p>
+    </header>
+
+    <form id="scan-form" class="scan-form">
+      <input
+        type="url"
+        id="url-input"
+        placeholder="https://example.com"
+        required
+      />
+      <button type="submit">Scan</button>
+    </form>
+
+    <p id="status" class="status"></p>
+
+    <section id="results" class="results"></section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

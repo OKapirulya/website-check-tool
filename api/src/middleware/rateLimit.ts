@@ -1,5 +1,6 @@
 import type { Context, MiddlewareHandler } from 'hono'
 import { getConnInfo } from '@hono/node-server/conninfo'
+import { logger } from '../lib/logger.js'
 
 interface Bucket {
   count: number
@@ -41,6 +42,7 @@ export const rateLimit: MiddlewareHandler = async (c, next) => {
 
   if (bucket.count >= MAX_REQUESTS) {
     const retryAfterSeconds = Math.ceil((bucket.resetAt - now) / 1000)
+    logger.warn({ ip, retryAfterSeconds }, 'rate_limit_exceeded')
     c.header('Retry-After', String(retryAfterSeconds))
     return c.json({ error: 'Too many requests. Please try again later.' }, 429)
   }

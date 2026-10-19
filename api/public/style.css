@@ -1,0 +1,141 @@
+:root {
+  --color-bg: #0f1115;
+  --color-surface: #1a1d24;
+  --color-text: #e4e6eb;
+  --color-muted: #9099a8;
+  --color-border: #2a2e37;
+  --color-pass: #30a46c;
+  --color-fail: #e5484d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.tagline {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.scan-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.scan-form input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.scan-form button {
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.scan-form button:hover {
+  background: #2563eb;
+}
+
+.status {
+  min-height: 1.2rem;
+  margin: 0 0 1.5rem;
+  color: var(--color-muted);
+}
+
+.status-error {
+  color: var(--color-fail);
+}
+
+.status-done {
+  color: var(--color-pass);
+}
+
+.severity-group {
+  margin-bottom: 1.5rem;
+}
+
+.severity-group h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  margin-bottom: 0.75rem;
+}
+
+.finding {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.finding-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.finding-title {
+  font-weight: 600;
+}
+
+.finding-details {
+  color: var(--color-muted);
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-pass {
+  background: rgba(48, 164, 108, 0.15);
+  color: var(--color-pass);
+}
+
+.badge-fail {
+  background: rgba(229, 72, 77, 0.15);
+  color: var(--color-fail);
+}

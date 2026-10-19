@@ -20,6 +20,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
 COPY --from=build /app/dist ./dist
+COPY public ./public
 
 USER node
 

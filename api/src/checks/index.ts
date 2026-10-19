@@ -10,24 +10,55 @@ import { checkMixedContent } from './mixedContent.js'
 import { checkSri } from './sri.js'
 import { checkDns } from './dns.js'
 import { checkDirectoryListing } from './directoryListing.js'
+import { logger } from '../lib/logger.js'
 
 type CheckFn = (url: string) => Promise<Finding[]>
 
-const checks: CheckFn[] = [
-  checkSecurityHeaders,
-  checkCookies,
-  checkServerFingerprint,
-  checkCors,
-  checkExposedPaths,
-  checkSitemapRobots,
-  checkTls,
-  checkMixedContent,
-  checkSri,
-  checkDns,
-  checkDirectoryListing,
+interface NamedCheck {
+  name: string
+  fn: CheckFn
+}
+
+const checks: NamedCheck[] = [
+  { name: 'securityHeaders', fn: checkSecurityHeaders },
+  { name: 'cookies', fn: checkCookies },
+  { name: 'serverFingerprint', fn: checkServerFingerprint },
+  { name: 'cors', fn: checkCors },
+  { name: 'exposedPaths', fn: checkExposedPaths },
+  { name: 'sitemapRobots', fn: checkSitemapRobots },
+  { name: 'tls', fn: checkTls },
+  { name: 'mixedContent', fn: checkMixedContent },
+  { name: 'sri', fn: checkSri },
+  { name: 'dns', fn: checkDns },
+  { name: 'directoryListing', fn: checkDirectoryListing },
 ]
 
 export async function runAllChecks(url: string): Promise<Finding[]> {
-  const results = await Promise.all(checks.map((check) => check(url)))
-  return results.flat()
+  const results = await Promise.allSettled(checks.map(({ fn }) => fn(url)))
+
+  const findings: Finding[] = []
+
+  results.forEach((result, index) => {
+    const { name } = checks[index]
+
+    if (result.status === 'fulfilled') {
+      findings.push(...result.value)
+      return
+    }
+
+    logger.warn(
+      { url, check: name, error: result.reason instanceof Error ? result.reason.message : 'unknown' },
+      'check_failed'
+    )
+
+    findings.push({
+      id: `${name}-error`,
+      title: `${name} check`,
+      severity: 'low',
+      passed: false,
+      details: 'This check could not be completed, possibly because the target blocked or timed out the request.',
+    })
+  })
+
+  return findings
 }

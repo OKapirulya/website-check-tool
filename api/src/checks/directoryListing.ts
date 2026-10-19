@@ -4,28 +4,46 @@ import { safeFetch, readTextLimited } from '../lib/http.js'
 const COMMON_PATHS = ['/images/', '/uploads/', '/assets/', '/files/', '/backup/']
 const MAX_BODY_BYTES = 200_000
 
+interface PathResult {
+  path: string
+  listed: boolean
+}
+
 export async function checkDirectoryListing(url: string): Promise<Finding[]> {
   const base = new URL(url)
-  const exposed: string[] = []
 
-  for (const path of COMMON_PATHS) {
-    const target = new URL(path, base.origin).toString()
-
-    try {
+  const results = await Promise.allSettled(
+    COMMON_PATHS.map(async (path): Promise<PathResult> => {
+      const target = new URL(path, base.origin).toString()
       const response = await safeFetch(target, { redirect: 'manual' })
-      if (response.status !== 200) continue
+
+      if (response.status !== 200) return { path, listed: false }
 
       const contentType = response.headers.get('content-type') ?? ''
-      if (!contentType.includes('text/html')) continue
+      if (!contentType.includes('text/html')) return { path, listed: false }
 
       const text = await readTextLimited(response, MAX_BODY_BYTES)
-      if (/Index of \//i.test(text)) {
-        exposed.push(path)
-      }
-    } catch {
-      continue
-    }
+      return { path, listed: /Index of \//i.test(text) }
+    })
+  )
+
+  const reachable = results.filter(
+    (r): r is PromiseFulfilledResult<PathResult> => r.status === 'fulfilled'
+  )
+
+  if (reachable.length === 0) {
+    return [
+      {
+        id: 'directory-listing',
+        title: 'Directory Listing',
+        severity: 'low',
+        passed: false,
+        details: 'Could not reach the target to check for directory listings (connection error or timeout).',
+      },
+    ]
   }
+
+  const exposed = reachable.filter((r) => r.value.listed).map((r) => r.value.path)
 
   return [
     {

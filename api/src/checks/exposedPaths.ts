@@ -4,7 +4,7 @@ import { safeFetch } from '../lib/http.js'
 interface PathCheck {
   path: string
   label: string
-  informational?: boolean // true: being present is good, not a leak
+  informational?: boolean
 }
 
 const PATHS: PathCheck[] = [
@@ -21,38 +21,37 @@ const PATHS: PathCheck[] = [
 
 export async function checkExposedPaths(url: string): Promise<Finding[]> {
   const base = new URL(url)
-  const findings: Finding[] = []
 
-  for (const { path, label, informational } of PATHS) {
-    const target = new URL(path, base.origin).toString()
+  return Promise.all(
+    PATHS.map(async ({ path, label, informational }): Promise<Finding> => {
+      const target = new URL(path, base.origin).toString()
 
-    try {
-      const response = await safeFetch(target, { redirect: 'manual' })
-      const isExposed = response.status === 200
+      try {
+        const response = await safeFetch(target, { redirect: 'manual' })
+        const isExposed = response.status === 200
 
-      findings.push({
-        id: `exposed-${path}`,
-        title: `Exposed path: ${path}`,
-        severity: informational ? 'low' : 'high',
-        passed: informational ? isExposed : !isExposed,
-        details: informational
-          ? isExposed
-            ? `${label} found at ${path}.`
-            : `No ${label} found at ${path}. Consider adding one.`
-          : isExposed
-            ? `${label} is publicly accessible at ${path}. This can expose sensitive data.`
-            : `${path} is not accessible.`,
-      })
-    } catch {
-      findings.push({
-        id: `exposed-${path}`,
-        title: `Exposed path: ${path}`,
-        severity: 'low',
-        passed: true,
-        details: `Could not reach ${path} (connection error).`,
-      })
-    }
-  }
-
-  return findings
+        return {
+          id: `exposed-${path}`,
+          title: `Exposed path: ${path}`,
+          severity: informational ? 'low' : 'high',
+          passed: informational ? isExposed : !isExposed,
+          details: informational
+            ? isExposed
+              ? `${label} found at ${path}.`
+              : `No ${label} found at ${path}. Consider adding one.`
+            : isExposed
+              ? `${label} is publicly accessible at ${path}. This can expose sensitive data.`
+              : `${path} is not accessible.`,
+        }
+      } catch {
+        return {
+          id: `exposed-${path}`,
+          title: `Exposed path: ${path}`,
+          severity: 'low',
+          passed: false,
+          details: `Could not reach ${path} (connection error or timeout).`,
+        }
+      }
+    })
+  )
 }

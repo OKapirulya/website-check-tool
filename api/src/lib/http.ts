@@ -65,11 +65,18 @@ export async function validateTargetUrl(input: string): Promise<URL> {
 
 const DEFAULT_TIMEOUT_MS = 5000
 
+/** fetch() with a built-in timeout, used by every check that talks HTTP. */
 export function safeFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  return fetch(url, {
+  const fetchPromise = fetch(url, {
     ...options,
     signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
   })
+
+  const backstop = new Promise<Response>((_, reject) => {
+    setTimeout(() => reject(new Error('Request timed out')), DEFAULT_TIMEOUT_MS + 1000)
+  })
+
+  return Promise.race([fetchPromise, backstop])
 }
 
 export async function readTextLimited(response: Response, maxBytes: number): Promise<string> {

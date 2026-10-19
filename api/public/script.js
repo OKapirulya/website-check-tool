@@ -13,6 +13,15 @@ const a11yButton = document.getElementById('a11y-button')
 const a11yStatusEl = document.getElementById('a11y-status')
 const a11yResultsEl = document.getElementById('a11y-results')
 
+let accessibilityEnabled = false
+
+fetch('/health')
+  .then((res) => res.json())
+  .then((data) => {
+    accessibilityEnabled = Boolean(data.accessibilityEnabled)
+  })
+  .catch(() => { })
+
 let currentUrl = null
 
 const SEVERITY_ORDER = ['high', 'medium', 'low']
@@ -52,8 +61,10 @@ form.addEventListener('submit', async (event) => {
     currentUrl = data.url
     explainButton.disabled = false
     aiSection.hidden = false
-    a11yButton.disabled = false
-    a11ySection.hidden = false
+    if (accessibilityEnabled) {
+      a11yButton.disabled = false
+      a11ySection.hidden = false
+    }
   } catch {
     setStatus('Could not reach the scanner.', 'error')
   }

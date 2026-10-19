@@ -2,7 +2,6 @@ import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 import { secureHeaders } from 'hono/secure-headers'
-import { checkAccessibility } from './checks/accessibility.js'
 import { runAllChecks } from './checks/index.js'
 import { explainFindings } from './lib/ai.js'
 import { validateTargetUrl, UrlValidationError } from './lib/http.js'
@@ -14,6 +13,8 @@ try {
 } catch {
   // No local .env file present
 }
+ 
+const ACCESSIBILITY_ENABLED = process.env.ENABLE_ACCESSIBILITY === 'true'
 
 const app = new Hono()
 
@@ -29,7 +30,7 @@ app.use(
 )
 
 app.get('/health', (c) => {
-  return c.json({ status: 'ok' })
+  return c.json({ status: 'ok', accessibilityEnabled: ACCESSIBILITY_ENABLED })
 })
 
 app.get('/check', rateLimit, async (c) => {
@@ -113,6 +114,10 @@ app.get('/explain', explainRateLimit, async (c) => {
 })
 
 app.get('/accessibility', accessibilityRateLimit, async (c) => {
+  if (!ACCESSIBILITY_ENABLED) {
+    return c.json({ error: 'Accessibility checks are not available in this environment.' }, 503)
+  }
+
   const url = c.req.query('url')
 
   if (!url) {
@@ -131,6 +136,7 @@ app.get('/accessibility', accessibilityRateLimit, async (c) => {
   const startedAt = Date.now()
 
   try {
+    const { checkAccessibility } = await import('./checks/accessibility.js')
     const findings = await checkAccessibility(url)
     logger.info(
       { url, durationMs: Date.now() - startedAt, findingsCount: findings.length },
@@ -160,7 +166,7 @@ const server = serve({
   port,
 })
 
-logger.info({ port }, 'server_started')
+logger.info({ port, accessibilityEnabled: ACCESSIBILITY_ENABLED }, 'server_started')
 
 process.on('SIGTERM', () => {
   logger.info('shutdown_initiated')

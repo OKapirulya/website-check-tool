@@ -17,6 +17,7 @@
   "keywords": [],
   "author": "Oleg Kapirulya",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@hono/node-server": "^2.1.5",
     "hono": "^4.13.13",
     "pino": "^10.4.0"

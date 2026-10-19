@@ -3,6 +3,13 @@ const input = document.getElementById('url-input')
 const statusEl = document.getElementById('status')
 const resultsEl = document.getElementById('results')
 
+const aiSection = document.getElementById('ai-section')
+const explainButton = document.getElementById('explain-button')
+const aiStatusEl = document.getElementById('ai-status')
+const aiExplanationEl = document.getElementById('ai-explanation')
+
+let currentUrl = null
+
 const SEVERITY_ORDER = ['high', 'medium', 'low']
 const SEVERITY_LABELS = {
   high: 'High severity',
@@ -17,6 +24,9 @@ form.addEventListener('submit', async (event) => {
   if (!url) return
 
   resultsEl.innerHTML = ''
+  aiSection.hidden = true
+  aiExplanationEl.textContent = ''
+  aiStatusEl.textContent = ''
   setStatus('Scanning...', 'loading')
 
   try {
@@ -30,8 +40,40 @@ form.addEventListener('submit', async (event) => {
 
     setStatus(`Scanned ${data.url}`, 'done')
     renderFindings(data.findings)
+
+    currentUrl = data.url
+    explainButton.disabled = false
+    aiSection.hidden = false
   } catch {
     setStatus('Could not reach the scanner.', 'error')
+  }
+})
+
+explainButton.addEventListener('click', async () => {
+  if (!currentUrl) return
+
+  explainButton.disabled = true
+  aiExplanationEl.textContent = ''
+  aiStatusEl.textContent = 'Asking Claude for an explanation...'
+  aiStatusEl.className = 'status status-loading'
+
+  try {
+    const response = await fetch(`/explain?url=${encodeURIComponent(currentUrl)}`)
+    const data = await response.json()
+
+    if (!response.ok) {
+      aiStatusEl.textContent = data.error ?? 'Could not generate an explanation.'
+      aiStatusEl.className = 'status status-error'
+      explainButton.disabled = false
+      return
+    }
+
+    aiStatusEl.textContent = ''
+    aiExplanationEl.textContent = data.explanation
+  } catch {
+    aiStatusEl.textContent = 'Could not reach the explanation service.'
+    aiStatusEl.className = 'status status-error'
+    explainButton.disabled = false
   }
 })
 

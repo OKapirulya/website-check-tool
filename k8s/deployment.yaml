@@ -35,6 +35,12 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 3000
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: website-check-ai
+                  key: ANTHROPIC_API_KEY
           volumeMounts:
             - name: tmp
               mountPath: /tmp

@@ -4,7 +4,6 @@ import { checkCookies } from './cookies.js'
 import { checkServerFingerprint } from './serverFingerprint.js'
 import { checkCors } from './cors.js'
 import { checkExposedPaths } from './exposedPaths.js'
-import { checkSitemapRobots } from './sitemap.js'
 import { checkTls } from './tls.js'
 import { checkMixedContent } from './mixedContent.js'
 import { checkSri } from './sri.js'
@@ -25,7 +24,6 @@ const checks: NamedCheck[] = [
   { name: 'serverFingerprint', fn: checkServerFingerprint },
   { name: 'cors', fn: checkCors },
   { name: 'exposedPaths', fn: checkExposedPaths },
-  { name: 'sitemapRobots', fn: checkSitemapRobots },
   { name: 'tls', fn: checkTls },
   { name: 'mixedContent', fn: checkMixedContent },
   { name: 'sri', fn: checkSri },

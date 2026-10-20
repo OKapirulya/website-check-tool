@@ -16,7 +16,6 @@ const PATHS: PathCheck[] = [
   { path: '/backup.zip', label: 'Backup archive' },
   { path: '/config.php.bak', label: 'Backed up configuration file' },
   { path: '/.well-known/security.txt', label: 'security.txt', informational: true },
-  { path: '/.well-known/change-password', label: 'change-password well-known URL', informational: true },
 ]
 
 export async function checkExposedPaths(url: string): Promise<Finding[]> {

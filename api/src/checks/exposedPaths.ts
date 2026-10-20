@@ -1,5 +1,5 @@
 import type { Finding } from '../types.js'
-import { safeFetch } from '../lib/http.js'
+import { safeFetch, readTextLimited } from '../lib/http.js'
 
 interface PathCheck {
   path: string
@@ -18,8 +18,22 @@ const PATHS: PathCheck[] = [
   { path: '/.well-known/security.txt', label: 'security.txt', informational: true },
 ]
 
+const CONTROL_SAMPLE_BYTES = 2000
+
+async function getControlBody(origin: string): Promise<string | null> {
+  const randomPath = `/__wct_control_${Math.random().toString(36).slice(2)}__`
+  try {
+    const response = await safeFetch(new URL(randomPath, origin).toString(), { redirect: 'manual' })
+    if (response.status !== 200) return null
+    return await readTextLimited(response, CONTROL_SAMPLE_BYTES)
+  } catch {
+    return null
+  }
+}
+
 export async function checkExposedPaths(url: string): Promise<Finding[]> {
   const base = new URL(url)
+  const controlBody = await getControlBody(base.origin)
 
   return Promise.all(
     PATHS.map(async ({ path, label, informational }): Promise<Finding> => {
@@ -27,7 +41,14 @@ export async function checkExposedPaths(url: string): Promise<Finding[]> {
 
       try {
         const response = await safeFetch(target, { redirect: 'manual' })
-        const isExposed = response.status === 200
+        let isExposed = response.status === 200
+
+        if (isExposed && controlBody !== null) {
+          const body = await readTextLimited(response, CONTROL_SAMPLE_BYTES)
+          if (body === controlBody) {
+            isExposed = false
+          }
+        }
 
         return {
           id: `exposed-${path}`,

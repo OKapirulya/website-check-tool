@@ -55,6 +55,9 @@ export function createRateLimiter({ windowMs, maxRequests }: RateLimitOptions): 
   }
 }
 
-export const rateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 10 })
-export const explainRateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 5 })
+const checkMax = Number(process.env.RATE_LIMIT_CHECK_MAX ?? 10)
+const explainMax = Number(process.env.RATE_LIMIT_EXPLAIN_MAX ?? 5)
+
+export const rateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: checkMax })
+export const explainRateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: explainMax })
 export const accessibilityRateLimit = createRateLimiter({ windowMs: 60_000, maxRequests: 5 })

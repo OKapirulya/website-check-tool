@@ -1,3 +1,4 @@
+import './lib/env.js'
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
@@ -8,11 +9,6 @@ import { validateTargetUrl, UrlValidationError } from './lib/http.js'
 import { logger } from './lib/logger.js'
 import { accessibilityRateLimit, explainRateLimit, rateLimit } from './middleware/rateLimit.js'
 
-try {
-  process.loadEnvFile()
-} catch {
-  // No local .env file present
-}
  
 const ACCESSIBILITY_ENABLED = process.env.ENABLE_ACCESSIBILITY === 'true'
 

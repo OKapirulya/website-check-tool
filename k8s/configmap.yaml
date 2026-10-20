@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: website-check-config
+  namespace: website-check-tool
+data:
+  RATE_LIMIT_CHECK_MAX: "10"
+  RATE_LIMIT_EXPLAIN_MAX: "5"
